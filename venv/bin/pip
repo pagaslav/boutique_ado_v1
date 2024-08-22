@@ -1,5 +1,5 @@
 #!/bin/sh
-'''exec' "/Users/aab/Library/Mobile Documents/com~apple~CloudDocs/Documents/FamilyDoc/Артем/IT/CodeInstitut/PROJECT 4/boutique_ado_v1/venv/bin/python3.12" "$0" "$@"
+'''exec' "/Users/aab/Library/Mobile Documents/com~apple~CloudDocs/Documents/FamilyDoc/Артем/IT/CodeInstitut/PROJECT 4/boutique_ado_v1/venv/bin/python" "$0" "$@"
 ' '''
 # -*- coding: utf-8 -*-
 import re
