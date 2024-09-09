@@ -181,6 +181,7 @@ STRIPE_CURRENCY = 'usd'
 STRIPE_PUBLIC_KEY = os.getenv('STRIPE_PUBLIC_KEY', 'pk_test_51PvKZTL6nonxjnriSrZSz1Jtniv04iZFZfJvvRW7qSN85mYyigmL3pw4GZFyBpDXcbtQncsNOoL3jLlKdYbyda4W00gdxy5C1l')
 STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY', 'sk_test_51PvKZTL6nonxjnriVLkWIuWmyutSTbtVpHjfvrEGenQ4WBNvij88RBRyZ963mYwtlczorNqlBeDLcyGkr6jMSGLP00picGYnBu')
 STRIPE_WH_SECRET = os.getenv('STRIPE_WH_SECRET', 'whsec_iv1ENEZS7ei0g7UUQciyNs57MtL30tov')
+DEFAULT_FROM_EMAIL = 'boutiqueado@example.com'
 
 # LOGGING = {
 #     'version': 1,
