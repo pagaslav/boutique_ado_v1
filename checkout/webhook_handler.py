@@ -8,6 +8,7 @@ from django.conf import settings
 from .models import Order, OrderLineItem
 from products.models import Product
 from profiles.models import UserProfile
+import stripe
 
 # Setting up logging to track events and errors in the webhook handler
 logger = logging.getLogger(__name__)
@@ -66,10 +67,17 @@ class StripeWH_Handler:
         if hasattr(intent, 'charges') and len(intent.charges.data) > 0:
             billing_details = intent.charges.data[0].billing_details
             grand_total = round(intent.charges.data[0].amount / 100, 2)
-        else:
+        elif hasattr(intent, 'payment_method'):
             # Используем данные из payment_method если charges отсутствуют
-            billing_details = intent.payment_method.billing_details
+            payment_method_data = stripe.PaymentMethod.retrieve(intent.payment_method)
+            billing_details = payment_method_data.billing_details
             grand_total = round(intent.amount / 100, 2)
+        else:
+            logger.error("No valid billing details found in intent")
+            return HttpResponse(
+                content=f"Webhook received: {event['type']} | ERROR: No billing details found",
+                status=500
+            )
 
         shipping_details = intent.shipping
 
