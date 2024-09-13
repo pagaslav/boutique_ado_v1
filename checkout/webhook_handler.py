@@ -62,16 +62,23 @@ class StripeWH_Handler:
         bag = getattr(intent.metadata, 'bag', None)  # Retrieving bag data from metadata
         save_info = getattr(intent.metadata, 'save_info', False)  # Retrieving save_info flag from metadata
 
-        billing_details = intent.charges.data[0].billing_details
-        shipping_details = intent.shipping
-        grand_total = round(intent.charges.data[0].amount / 100, 2)
+        # Проверяем, существует ли поле charges
+        if hasattr(intent, 'charges') and len(intent.charges.data) > 0:
+            billing_details = intent.charges.data[0].billing_details
+            grand_total = round(intent.charges.data[0].amount / 100, 2)
+        else:
+            # Используем данные из payment_method если charges отсутствуют
+            billing_details = intent.payment_method.billing_details
+            grand_total = round(intent.amount / 100, 2)
 
-        # Clean up empty fields in the shipping details
+        shipping_details = intent.shipping
+
+        # Очищаем пустые поля в shipping_details
         for field, value in shipping_details.address.items():
             if value == "":
                 shipping_details.address[field] = None
 
-        # Attempt to update user profile information if save_info is checked
+        # Обновляем профиль пользователя, если save_info отмечен
         profile = None
         username = getattr(intent.metadata, 'username', 'AnonymousUser')
         if username != 'AnonymousUser':
@@ -90,7 +97,7 @@ class StripeWH_Handler:
             except UserProfile.DoesNotExist:
                 logger.error(f"User profile not found for {username}")
 
-        # Check if the order already exists in the database
+        # Проверяем, существует ли заказ в базе данных
         order_exists = False
         attempt = 1
         while attempt <= 5:
@@ -116,14 +123,14 @@ class StripeWH_Handler:
                 attempt += 1
                 time.sleep(1)
 
-        # If order exists, send confirmation email and return success response
+        # Если заказ существует, отправляем подтверждение по email
         if order_exists:
             self._send_confirmation_email(order)
             return HttpResponse(
                 content=f'Webhook received: {event["type"]} | SUCCESS: Verified order already in database',
                 status=200)
         else:
-            # Create a new order if it does not exist
+            # Если заказ не существует, создаём новый
             try:
                 order = Order.objects.create(
                     full_name=shipping_details.name,
@@ -139,7 +146,7 @@ class StripeWH_Handler:
                     original_bag=bag,
                     stripe_pid=pid,
                 )
-                # Add items to the order
+                # Добавляем товары в заказ
                 for item_id, item_data in json.loads(bag).items():
                     product = Product.objects.get(id=item_id)
                     if isinstance(item_data, int):
@@ -161,15 +168,18 @@ class StripeWH_Handler:
                 logger.info(f"Order created successfully: {order.id}")
             except Exception as e:
                 if order:
-                    order.delete()  # Rollback order creation if something goes wrong
+                    order.delete()  # Откатываем создание заказа, если что-то пошло не так
                 logger.error(f"Error creating order: {e}")
                 return HttpResponse(
                     content=f'Webhook received: {event["type"]} | ERROR: {e}',
                     status=500)
+        
+        # Отправляем подтверждение по email
         self._send_confirmation_email(order)
         return HttpResponse(
             content=f'Webhook received: {event["type"]} | SUCCESS: Created order in webhook',
             status=200)
+
 
     def handle_payment_intent_payment_failed(self, event):
         """
