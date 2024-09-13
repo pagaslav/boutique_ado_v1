@@ -2,7 +2,9 @@ from django.shortcuts import render, redirect, reverse, get_object_or_404, HttpR
 from django.views.decorators.http import require_POST
 from django.contrib import messages
 from django.conf import settings
-
+from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+from .webhook_handler import StripeWH_Handler
 from .forms import OrderForm
 from .models import Order, OrderLineItem
 from products.models import Product
@@ -175,3 +177,41 @@ def checkout_success(request, order_number):
     }
 
     return render(request, template, context)
+
+
+@csrf_exempt
+def webhook(request):
+    # Retrieve the event by verifying the webhook signature
+    payload = request.body
+    sig_header = request.META['HTTP_STRIPE_SIGNATURE']
+    event = None
+    
+    try:
+        event = stripe.Webhook.construct_event(
+            payload, sig_header, settings.STRIPE_WH_SECRET
+        )
+    except ValueError as e:
+        # Invalid payload
+        return HttpResponse(status=400)
+    except stripe.error.SignatureVerificationError as e:
+        # Invalid signature
+        return HttpResponse(status=400)
+
+    # Set up a Stripe webhook handler
+    wh_handler = StripeWH_Handler(request)
+
+    # Map webhook events to relevant handler functions
+    event_map = {
+        'payment_intent.succeeded': wh_handler.handle_payment_intent_succeeded,
+        'payment_intent.payment_failed': wh_handler.handle_payment_intent_payment_failed,
+    }
+
+    # Get the event type from Stripe
+    event_type = event['type']
+
+    # If there's a handler for the event, get it from the event map, else use the generic one
+    event_handler = event_map.get(event_type, wh_handler.handle_event)
+
+    # Call the event handler
+    response = event_handler(event)
+    return response
