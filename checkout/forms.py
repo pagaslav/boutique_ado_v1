@@ -1,11 +1,9 @@
 from django import forms
 from django_countries.fields import CountryField
-
 from .models import Order
-from django_countries.widgets import CountrySelectWidget
 
 class OrderForm(forms.ModelForm):
-    country = CountryField(blank_label='Select Country').formfield(widget=CountrySelectWidget())
+    country = CountryField(blank_label='Select Country').formfield()
 
     class Meta:
         model = Order
@@ -41,6 +39,3 @@ class OrderForm(forms.ModelForm):
                 self.fields[field].widget.attrs['placeholder'] = placeholder
             self.fields[field].widget.attrs['class'] = 'stripe-style-input'
             self.fields[field].label = False
-
-        # Adding class to country field
-        self.fields['country'].widget.attrs['class'] = 'stripe-style-input'
