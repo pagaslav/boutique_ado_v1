@@ -55,6 +55,9 @@ class StripeWH_Handler:
         Creates or verifies an order in the database based on Stripe data.
         """
         intent = event.data.object
+
+        logger.info(f"Intent data: {json.dumps(intent, indent=2)}")
+
         pid = intent.id
         bag = getattr(intent.metadata, 'bag', None)  # Retrieving bag data from metadata
         save_info = getattr(intent.metadata, 'save_info', False)  # Retrieving save_info flag from metadata
