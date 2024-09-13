@@ -15,6 +15,7 @@ from bag.contexts import bag_contents
 import stripe
 import json
 
+@csrf_exempt  # Отключение CSRF защиты
 @require_POST
 def cache_checkout_data(request):
     try:
