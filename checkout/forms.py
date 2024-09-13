@@ -1,6 +1,7 @@
 from django import forms
 from django_countries.fields import CountryField
 from .models import Order
+from django_countries.widgets import CountrySelectWidget
 
 class OrderForm(forms.ModelForm):
     # country = CountryField(blank_label='Select Country').formfield()
