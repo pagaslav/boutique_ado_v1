@@ -66,6 +66,7 @@ form.addEventListener("submit", function (ev) {
 
   $.post(url, postData)
     .done(function () {
+      console.log("Cache data submitted successfully.")
       stripe
         .confirmCardPayment(clientSecret, {
           payment_method: {
@@ -97,6 +98,7 @@ form.addEventListener("submit", function (ev) {
           },
         })
         .then(function (result) {
+          console.log("Confirm card payment response:", result)
           if (result.error) {
             var errorDiv = document.getElementById("card-errors")
             var html = `
@@ -111,12 +113,19 @@ form.addEventListener("submit", function (ev) {
             $("#submit-button").attr("disabled", false)
           } else {
             if (result.paymentIntent.status === "succeeded") {
+              console.log("Payment succeeded, submitting form.")
               form.submit()
+            } else {
+              console.log(
+                "Payment status not succeeded:",
+                result.paymentIntent.status
+              )
             }
           }
         })
     })
     .fail(function () {
+      console.log("Error submitting cache data.")
       // just reload the page, the error will be in django messages
       location.reload()
     })
