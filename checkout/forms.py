@@ -4,8 +4,8 @@ from .models import Order
 from django_countries.widgets import CountrySelectWidget
 
 class OrderForm(forms.ModelForm):
-    # country = CountryField(blank_label='Select Country').formfield()
-    country = CountryField(blank_label='Select Country').formfield(widget=CountrySelectWidget())
+    country = CountryField(blank_label='Select Country').formfield()
+    # country = CountryField(blank_label='Select Country').formfield(widget=CountrySelectWidget())
 
     class Meta:
         model = Order
@@ -20,6 +20,9 @@ class OrderForm(forms.ModelForm):
         labels and set autofocus on first field
         """
         super().__init__(*args, **kwargs)
+
+        print(self.fields['country'].widget)
+
         placeholders = {
             'full_name': 'Full Name',
             'email': 'Email Address',
