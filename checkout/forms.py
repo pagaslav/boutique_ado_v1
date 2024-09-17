@@ -1,10 +1,11 @@
 from django import forms
 from django_countries.fields import CountryField
-from django_countries.widgets import CountrySelectWidget
+# from django_countries.widgets import CountrySelectWidget
 from .models import Order
 
 class OrderForm(forms.ModelForm):
-    country = CountryField(blank_label='(Select country)').formfield(widget=CountrySelectWidget())
+    # country = CountryField(blank_label='(Select country)').formfield(widget=CountrySelectWidget())
+    country = CountryField(blank_label='Select Country').formfield()
 
     class Meta:
         model = Order
@@ -14,6 +15,8 @@ class OrderForm(forms.ModelForm):
             'town_or_city', 'postcode', 'country',
             'county',
         )
+
+        widgets = {}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
