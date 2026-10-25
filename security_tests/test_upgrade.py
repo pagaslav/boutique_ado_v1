@@ -33,3 +33,11 @@ class UpgradeSmokeTests(TestCase):
         self.assertFalse(configured['DEBUG'])
         self.assertEqual(configured['STORAGES']['default']['BACKEND'], 'custom_storages.MediaStorage')
         self.assertEqual(configured['STORAGES']['staticfiles']['BACKEND'], 'custom_storages.StaticStorage')
+
+    def test_profile_signal_creates_exactly_one_profile_without_breaking_transaction(self):
+        from profiles.models import UserProfile
+        user = get_user_model().objects.create_user(username='profile-smoke')
+        user.first_name = 'Updated'
+        user.save()
+        self.assertEqual(UserProfile.objects.filter(user=user).count(), 1)
+        self.assertEqual(get_user_model().objects.get(pk=user.pk).first_name, 'Updated')
