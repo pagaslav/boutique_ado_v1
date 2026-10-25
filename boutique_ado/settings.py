@@ -25,7 +25,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = os.environ.get('SECRET_KEY', '')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = 'DEVELOPMENT' in os.environ
+DEBUG = os.environ.get('DEVELOPMENT', '').lower() in {'1', 'true', 'yes'}
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'boutiq-ado-ci-8d4ffe06054d.herokuapp.com']
 
@@ -192,9 +192,11 @@ if 'USE_AWS' in os.environ:
     AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
 
     # Static and media files
-    STATICFILES_STORAGE = 'custom_storages.StaticStorage'
+    STORAGES = {
+        'default': {'BACKEND': 'custom_storages.MediaStorage'},
+        'staticfiles': {'BACKEND': 'custom_storages.StaticStorage'},
+    }
     STATICFILES_LOCATION = 'static'
-    DEFAULT_FILE_STORAGE = 'custom_storages.MediaStorage'
     MEDIAFILES_LOCATION = 'media'
 
     # Override static and media URLs in production
