@@ -23,4 +23,6 @@ never copy credentials into Git.
 The above test command uses disposable test settings. Production migration and
 deployment remain separate user-approved operations. Before such a release,
 review existing allauth email/provider data and the actual production Python
-version. The remaining setuptools advisory is outside this environment cleanup.
+version. Setuptools is updated in the follow-up build-toolchain PR. Its removal of
+`pkg_resources` requires django-countries 9.1.0; address validation and
+storage of country codes are covered by isolated tests.
